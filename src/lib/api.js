@@ -54,7 +54,9 @@ export async function fetchJson(path, options = {}) {
 }
 
 export async function fetchWorkshops() {
-  return fetchJson("/api/workshops");
+  const token = getStoredToken();
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  return fetchJson("/api/workshops", { headers });
 }
 
 /** @param {{ email: string, password: string }} body */

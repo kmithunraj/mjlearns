@@ -1,8 +1,8 @@
-import { Calendar, IndianRupee, User } from "lucide-react";
+import { BadgeCheck, Calendar, IndianRupee, User } from "lucide-react";
 import ReserveSeatButton from "./ReserveSeatButton";
 import { formatWorkshopPrice, formatWorkshopWhen } from "../lib/workshopFormat";
 
-export default function WorkshopCard({ workshop: w }) {
+export default function WorkshopCard({ workshop: w, onRegistered }) {
   return (
     <article className="rounded-2xl border border-violet-200 bg-gradient-to-br from-white to-violet-50 p-8 shadow-sm">
       <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Workshop</p>
@@ -29,7 +29,14 @@ export default function WorkshopCard({ workshop: w }) {
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
           {formatWorkshopPrice(w.price)}
         </span>
-        <ReserveSeatButton workshopId={Number(w.id)} />
+        {w.registered ? (
+          <span className="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-semibold text-emerald-800">
+            <BadgeCheck size={18} aria-hidden />
+            Registered
+          </span>
+        ) : (
+          <ReserveSeatButton onRegistered={onRegistered} workshopId={Number(w.id)} />
+        )}
       </div>
     </article>
   );

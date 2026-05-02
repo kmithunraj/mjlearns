@@ -7,7 +7,7 @@ import { AUTH_CHANGED_EVENT, getStoredToken } from "../lib/session";
 const btnClass =
   "inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800 disabled:opacity-60";
 
-export default function ReserveSeatButton({ workshopId }) {
+export default function ReserveSeatButton({ workshopId, onRegistered }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
   const [error, setError] = useState(null);
@@ -33,6 +33,7 @@ export default function ReserveSeatButton({ workshopId }) {
     try {
       const data = await postWorkshopRegistration(workshopId);
       setMessage(data.message || "Seat reserved. Complete payment to confirm.");
+      onRegistered?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Could not reserve");
     } finally {

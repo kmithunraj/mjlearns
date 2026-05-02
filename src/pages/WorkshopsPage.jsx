@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import WorkshopCard from "../components/WorkshopCard";
 import SectionTitle from "../components/SectionTitle";
 import { fetchWorkshops, postWorkshopRegistration } from "../lib/api";
-import { getStoredToken } from "../lib/session";
+import { AUTH_CHANGED_EVENT, getStoredToken } from "../lib/session";
 
 export default function WorkshopsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -14,22 +14,30 @@ export default function WorkshopsPage() {
 
   const reserveId = searchParams.get("reserve");
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await fetchWorkshops();
-        if (!cancelled) setWorkshops(Array.isArray(data) ? data : []);
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Could not load workshops");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+  const loadWorkshops = useCallback(async (quiet = false) => {
+    if (!quiet) {
+      setLoading(true);
+      setError(null);
+    }
+    try {
+      const data = await fetchWorkshops();
+      setWorkshops(Array.isArray(data) ? data : []);
+    } catch (e) {
+      if (!quiet) setError(e instanceof Error ? e.message : "Could not load workshops");
+    } finally {
+      if (!quiet) setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadWorkshops(false);
+  }, [loadWorkshops]);
+
+  useEffect(() => {
+    const onAuth = () => loadWorkshops(true);
+    window.addEventListener(AUTH_CHANGED_EVENT, onAuth);
+    return () => window.removeEventListener(AUTH_CHANGED_EVENT, onAuth);
+  }, [loadWorkshops]);
 
   useEffect(() => {
     if (!reserveId || !/^\d+$/.test(reserveId) || !getStoredToken()) return;
@@ -40,6 +48,7 @@ export default function WorkshopsPage() {
         const data = await postWorkshopRegistration(Number(reserveId));
         if (!cancelled) {
           setReserveBanner({ type: "ok", text: data.message || "Seat reserved. Complete payment to confirm." });
+          await loadWorkshops(true);
         }
       } catch (e) {
         if (!cancelled) {
@@ -59,7 +68,7 @@ export default function WorkshopsPage() {
     return () => {
       cancelled = true;
     };
-  }, [reserveId, setSearchParams]);
+  }, [reserveId, setSearchParams, loadWorkshops]);
 
   return (
     <section className="py-10 md:py-14">
@@ -91,7 +100,9 @@ export default function WorkshopsPage() {
         {!loading && !error && workshops.length === 0 && (
           <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">No workshops scheduled yet.</p>
         )}
-        {!loading && !error && workshops.map((w) => <WorkshopCard key={w.id} workshop={w} />)}
+        {!loading &&
+          !error &&
+          workshops.map((w) => <WorkshopCard key={w.id} onRegistered={() => loadWorkshops(true)} workshop={w} />)}
       </div>
     </section>
   );
