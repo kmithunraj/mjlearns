@@ -1,64 +1,18 @@
-import { ArrowRight, Calendar, IndianRupee, Sparkles, User } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FeatureCard from "../components/FeatureCard";
 import SectionTitle from "../components/SectionTitle";
 import { features, heroWords, journeyCards, stats } from "../data/siteData";
-import { fetchWorkshops } from "../lib/api";
-
-function formatWorkshopPrice(price) {
-  const n = Number(price);
-  if (!Number.isFinite(n) || n === 0) return "Free";
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    maximumFractionDigits: Number.isInteger(n) ? 0 : 2,
-  }).format(n);
-}
-
-function formatWorkshopWhen(iso) {
-  if (!iso) return "";
-  const d = new Date(iso);
-  return new Intl.DateTimeFormat("en-IN", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZone: "Asia/Kolkata",
-    timeZoneName: "short",
-  }).format(d);
-}
 
 export default function HomePage() {
   const [wordIndex, setWordIndex] = useState(0);
-  const [workshops, setWorkshops] = useState([]);
-  const [workshopsError, setWorkshopsError] = useState(null);
-  const [workshopsLoading, setWorkshopsLoading] = useState(true);
 
   useEffect(() => {
     const timer = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % heroWords.length);
     }, 2200);
     return () => clearInterval(timer);
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const data = await fetchWorkshops();
-        if (!cancelled) setWorkshops(Array.isArray(data) ? data : []);
-      } catch (e) {
-        if (!cancelled) setWorkshopsError(e instanceof Error ? e.message : "Could not load workshops");
-      } finally {
-        if (!cancelled) setWorkshopsLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
   }, []);
 
   return (
@@ -83,21 +37,15 @@ export default function HomePage() {
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-sm font-bold text-slate-900 shadow-lg shadow-cyan-900/20 transition hover:bg-cyan-200 hover:text-slate-950"
-                to="/#live-workshop"
+                to="/workshops"
               >
-                View live workshop <ArrowRight size={16} />
+                View workshops <ArrowRight size={16} />
               </Link>
               <Link
                 className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
                 to="/courses"
               >
                 Explore programs
-              </Link>
-              <Link
-                className="inline-flex items-center gap-2 rounded-xl border border-white/30 px-5 py-3 text-sm font-semibold text-white transition hover:bg-white/10"
-                to="/features"
-              >
-                See platform features
               </Link>
             </div>
           </div>
@@ -119,71 +67,6 @@ export default function HomePage() {
               })}
             </div>
           </div>
-        </div>
-      </section>
-
-      <section className="mt-6 scroll-mt-24" id="live-workshop">
-        <SectionTitle
-          badge="Live"
-          subtitle="Book your seat for the next session — details from our server."
-          title="Upcoming workshop"
-        />
-        <div className="mx-auto max-w-3xl">
-          {workshopsLoading && (
-            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">Loading workshop…</p>
-          )}
-          {!workshopsLoading && workshopsError && (
-            <p className="rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
-              {workshopsError} — start the API on port 4000 or set <code className="font-mono">VITE_API_URL</code>.
-            </p>
-          )}
-          {!workshopsLoading && !workshopsError && workshops.length === 0 && (
-            <p className="rounded-2xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
-              No workshops scheduled yet.
-            </p>
-          )}
-          {!workshopsLoading &&
-            !workshopsError &&
-            workshops.map((w) => (
-              <article
-                className="rounded-2xl border border-violet-200 bg-gradient-to-br from-white to-violet-50 p-8 shadow-sm"
-                key={w.id}
-              >
-                <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Featured</p>
-                <h2 className="mt-2 text-2xl font-bold text-slate-900">{w.title}</h2>
-                <p className="mt-3 inline-flex items-center gap-2 text-lg font-bold text-violet-800">
-                  <IndianRupee className="shrink-0" size={22} strokeWidth={2.5} aria-hidden />
-                  <span>{formatWorkshopPrice(w.price)}</span>
-                  {Number(w.price) > 0 ? (
-                    <span className="text-sm font-normal text-slate-600">per seat</span>
-                  ) : null}
-                </p>
-                <div className="mt-4 flex flex-col gap-2 text-sm text-slate-700">
-                  <span className="inline-flex items-center gap-2">
-                    <Calendar className="shrink-0 text-violet-600" size={18} />
-                    {formatWorkshopWhen(w.date)}
-                  </span>
-                  {w.instructor ? (
-                    <span className="inline-flex items-center gap-2">
-                      <User className="shrink-0 text-violet-600" size={18} />
-                      Led by {w.instructor}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-slate-600">{w.description}</p>
-                <div className="mt-6 flex flex-wrap items-center gap-3">
-                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
-                    {formatWorkshopPrice(w.price)}
-                  </span>
-                  <Link
-                    className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800"
-                    to="/signup"
-                  >
-                    Reserve a seat <ArrowRight size={16} />
-                  </Link>
-                </div>
-              </article>
-            ))}
         </div>
       </section>
 

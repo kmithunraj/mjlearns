@@ -22,6 +22,7 @@ import {
 
 export const navItems = [
   { label: "Home", path: "/" },
+  { label: "Workshops", path: "/workshops" },
   { label: "Features", path: "/features" },
   { label: "Courses", path: "/courses" },
   { label: "About", path: "/about" },
