@@ -1,10 +1,20 @@
-import { ArrowRight, Calendar, Sparkles, User } from "lucide-react";
+import { ArrowRight, Calendar, IndianRupee, Sparkles, User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import FeatureCard from "../components/FeatureCard";
 import SectionTitle from "../components/SectionTitle";
 import { features, heroWords, journeyCards, stats } from "../data/siteData";
 import { fetchWorkshops } from "../lib/api";
+
+function formatWorkshopPrice(price) {
+  const n = Number(price);
+  if (!Number.isFinite(n) || n === 0) return "Free";
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    maximumFractionDigits: Number.isInteger(n) ? 0 : 2,
+  }).format(n);
+}
 
 function formatWorkshopWhen(iso) {
   if (!iso) return "";
@@ -141,6 +151,13 @@ export default function HomePage() {
               >
                 <p className="text-xs font-semibold uppercase tracking-wide text-violet-600">Featured</p>
                 <h2 className="mt-2 text-2xl font-bold text-slate-900">{w.title}</h2>
+                <p className="mt-3 inline-flex items-center gap-2 text-lg font-bold text-violet-800">
+                  <IndianRupee className="shrink-0" size={22} strokeWidth={2.5} aria-hidden />
+                  <span>{formatWorkshopPrice(w.price)}</span>
+                  {Number(w.price) > 0 ? (
+                    <span className="text-sm font-normal text-slate-600">per seat</span>
+                  ) : null}
+                </p>
                 <div className="mt-4 flex flex-col gap-2 text-sm text-slate-700">
                   <span className="inline-flex items-center gap-2">
                     <Calendar className="shrink-0 text-violet-600" size={18} />
@@ -156,7 +173,7 @@ export default function HomePage() {
                 <p className="mt-4 text-sm leading-relaxed text-slate-600">{w.description}</p>
                 <div className="mt-6 flex flex-wrap items-center gap-3">
                   <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
-                    {Number(w.price) === 0 ? "Free" : `₹${w.price}`}
+                    {formatWorkshopPrice(w.price)}
                   </span>
                   <Link
                     className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800"
