@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { login, register } from "../lib/api";
+import { postAuthRedirectPath } from "../lib/authRedirect";
 import { setSession } from "../lib/session";
 
 export default function EmailPasswordForm({ mode, redirectTo = "/" }) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const afterAuthPath = postAuthRedirectPath(searchParams, redirectTo);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,7 +24,7 @@ export default function EmailPasswordForm({ mode, redirectTo = "/" }) {
           : await login({ email: email.trim(), password });
       if (data.token && data.user) {
         setSession(data.token, data.user);
-        navigate(redirectTo, { replace: true });
+        navigate(afterAuthPath, { replace: true });
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");

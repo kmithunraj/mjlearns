@@ -1,5 +1,5 @@
-import { ArrowRight, Calendar, IndianRupee, User } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Calendar, IndianRupee, User } from "lucide-react";
+import ReserveSeatButton from "./ReserveSeatButton";
 import { formatWorkshopPrice, formatWorkshopWhen } from "../lib/workshopFormat";
 
 export default function WorkshopCard({ workshop: w }) {
@@ -29,12 +29,7 @@ export default function WorkshopCard({ workshop: w }) {
         <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800">
           {formatWorkshopPrice(w.price)}
         </span>
-        <Link
-          className="inline-flex items-center gap-2 rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800"
-          to="/signup"
-        >
-          Reserve a seat <ArrowRight size={16} />
-        </Link>
+        <ReserveSeatButton workshopId={Number(w.id)} />
       </div>
     </article>
   );

@@ -1,3 +1,5 @@
+import { getStoredToken } from "./session";
+
 const base = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 
 /** Shown when the server returns HTML (e.g. index.html) instead of JSON. */
@@ -63,4 +65,17 @@ export function register(body) {
 /** @param {{ email: string, password: string }} body */
 export function login(body) {
   return fetchJson("/api/auth/login", { method: "POST", body: JSON.stringify(body) });
+}
+
+/** @param {number} workshopId — requires a stored JWT (Bearer). */
+export function postWorkshopRegistration(workshopId) {
+  const token = getStoredToken();
+  if (!token) {
+    return Promise.reject(new Error("You need to sign in to reserve a seat."));
+  }
+  return fetchJson("/api/register", {
+    method: "POST",
+    body: JSON.stringify({ workshopId }),
+    headers: { Authorization: `Bearer ${token}` },
+  });
 }
