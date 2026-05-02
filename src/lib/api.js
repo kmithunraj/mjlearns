@@ -55,17 +55,12 @@ export async function fetchWorkshops() {
   return fetchJson("/api/workshops");
 }
 
-/** @param {{ email: string }} body */
-export function sendOtp(body) {
-  return fetchJson("/api/auth/send-otp", { method: "POST", body: JSON.stringify(body) });
+/** @param {{ email: string, password: string }} body */
+export function register(body) {
+  return fetchJson("/api/auth/register", { method: "POST", body: JSON.stringify(body) });
 }
 
-/** @param {{ email: string }} body */
-export function resendOtp(body) {
-  return fetchJson("/api/auth/resend-otp", { method: "POST", body: JSON.stringify(body) });
-}
-
-/** @param {{ email: string, otp: string }} body */
-export function verifyOtp(body) {
-  return fetchJson("/api/auth/verify-otp", { method: "POST", body: JSON.stringify(body) });
+/** @param {{ email: string, password: string }} body */
+export function login(body) {
+  return fetchJson("/api/auth/login", { method: "POST", body: JSON.stringify(body) });
 }
